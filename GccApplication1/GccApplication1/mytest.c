@@ -5,10 +5,7 @@
 
 
 uint16_t sccMap[] = {0x1551, 0x2080, 0x1e11, 0x1b11, 0x0b50, 0x1b41, 0x1f41, 0x0111, 0x1f51, 0x1b51, 0x0000};
-
-void writeChar(char ch, int pos); // from lab 1
-
-bool is_prime(long i); // from lab 1
+bool prev = false;
 
 void LCD_Init(void) {
 	//Part 1
@@ -101,6 +98,7 @@ void printAt(long num, int pos) {
     writeChar( (num % 100) / 10 + '0', pp);
     pp++;
     writeChar( num % 10 + '0', pp);
+	//yield();
 }
 
 void computePrimes(int pos) {
@@ -113,8 +111,17 @@ void computePrimes(int pos) {
     }
 }
 
+ISR(PCINT1_vect) {
+	if (!(PINB & (1<<PB7)) {
+		yield();
+		
+	}
+}
+
 int main() {
-	LCD_Init();
+	LCD_Init(); 
+	PCINT15 = (1 << EIMSK) | (1 << PCMSK1) | PCINT15;
+	PORTB = PORTB | (1 << PB7);
     spawn(computePrimes, 0);
     computePrimes(3);
 }
