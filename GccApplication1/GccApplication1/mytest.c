@@ -2,10 +2,13 @@
 #include <avr/io.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <avr/interrupt.h>
 
 
 uint16_t sccMap[] = {0x1551, 0x2080, 0x1e11, 0x1b11, 0x0b50, 0x1b41, 0x1f41, 0x0111, 0x1f51, 0x1b51, 0x0000};
 bool prev = false;
+int pp;
+mutex MTX = MUTEX_INIT;
 
 void LCD_Init(void) {
 	//Part 1
@@ -14,8 +17,6 @@ void LCD_Init(void) {
 	LCDFRR = (1 << LCDCD2) | (1 << LCDCD1) | (1 << LCDCD0);
 	LCDCRA = (1 << LCDEN) | (1 << LCDAB);
 	
-	//Part 2
-	TCCR1B = (1 << CS12);
 	return;
 }
 
@@ -94,10 +95,15 @@ bool is_prime(long i) {
 }
 
 void printAt(long num, int pos) {
-    int pp = pos;
+
+	//Lock to not disturb shared variable pp
+	lock(&MTX);
+    pp = pos;
     writeChar( (num % 100) / 10 + '0', pp);
+	for(volatile int i = 0; i < 1000; i++);
     pp++;
     writeChar( num % 10 + '0', pp);
+	unlock(&MTX);
 	//yield();
 }
 
@@ -111,17 +117,14 @@ void computePrimes(int pos) {
     }
 }
 
-ISR(PCINT1_vect) {
-	if (!(PINB & (1<<PB7)) {
-		yield();
-		
-	}
+
+//Every 50 ms
+ISR(TIMER1_COMPA_vect) {
+	yield();
 }
 
 int main() {
-	LCD_Init(); 
-	PCINT15 = (1 << EIMSK) | (1 << PCMSK1) | PCINT15;
-	PORTB = PORTB | (1 << PB7);
+	LCD_Init();
     spawn(computePrimes, 0);
     computePrimes(3);
 }

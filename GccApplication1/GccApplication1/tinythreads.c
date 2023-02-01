@@ -35,6 +35,20 @@ static void initialize(void) {
         threads[i].next = &threads[i+1];
     threads[NTHREADS-1].next = NULL;
 
+    //Set compare match
+    PORTB = PORTB | (1 << PB5);
+    
+    //Set timer enabler
+    TIMSK1 = (1 << OCIE1A);
+    
+    //Set pre-scaleing factor and CTC
+	TCCR1B = (1 << WGM12) | (1 << CS12) | (1 << CS10);
+
+    //8 000 000 / 1024 /1000 * 50 (Target Time)
+    OCR1A = 390.625;
+    
+    //Set timer
+	TCNT1 = 0;
 
     initialized = 1;
 }
@@ -98,9 +112,31 @@ void yield(void) {
 }
 
 void lock(mutex *m) {
+    DISABLE();
+    if (m->locked == 0) {
+        m->locked = 1;
+    }
+    else {
+        //Add current thread to wait queue
+        enqueue(current, &(m->waitQ));
 
+        //And go to next thread
+        dispatch(dequeue(&readyQ));
+    }
+    ENABLE();
 }
 
 void unlock(mutex *m) {
-
+    DISABLE();
+    if (m->waitQ == NULL) {
+        m->locked = 0;
+    }
+    else {
+        // Add current thread to ready queue
+        enqueue(current, &readyQ);
+        
+        //And continue with any waiting threads
+        dispatch(dequeue(&m->waitQ));
+    }
+    ENABLE();
 }
