@@ -27,6 +27,8 @@ thread freeQ   = threads;
 thread readyQ  = NULL;
 thread current = &initp;
 
+mutex MTX2 = MUTEX_INIT;
+
 int initialized = 0;
 
 static void initialize(void) {
@@ -41,7 +43,7 @@ static void initialize(void) {
     //Set timer enabler
     TIMSK1 = (1 << OCIE1A);
     
-    //Set pre-scaleing factor and CTC
+    //Set pre-scaling factor and CTC
 	TCCR1B = (1 << WGM12) | (1 << CS12) | (1 << CS10);
 
     //8 000 000 / 1024 /1000 * 50 (Target Time)
@@ -87,6 +89,7 @@ void spawn(void (* function)(int), int arg) {
     thread newp;
 
     DISABLE();
+    //lock(&MTX2);
     if (!initialized) initialize();
 
     newp = dequeue(&freeQ);
@@ -95,20 +98,26 @@ void spawn(void (* function)(int), int arg) {
     newp->next = NULL;
     if (setjmp(newp->context) == 1) {
         ENABLE();
+        //unlock(&MTX2);
         current->function(current->arg);
         DISABLE();
+        //lock(&MTX2);
+
         enqueue(current, &freeQ);
         dispatch(dequeue(&readyQ));
     }
     SETSTACK(&newp->context, &newp->stack);
 
     enqueue(newp, &readyQ);
+    //unlock(&MTX2);
     ENABLE();
 }
 
 void yield(void) {
+	DISABLE();
 	enqueue(current, &readyQ);
 	dispatch(dequeue(&readyQ));
+	ENABLE();
 }
 
 void lock(mutex *m) {
