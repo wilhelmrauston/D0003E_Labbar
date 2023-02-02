@@ -97,13 +97,13 @@ bool is_prime(long i) {
 void printAt(long num, int pos) {
 
 	//Lock to not disturb shared variable pp
-	//lock(&MTX);
+	lock(&MTX);
     pp = pos;
     writeChar( (num % 100) / 10 + '0', pp);
 	for(volatile int i = 0; i < 1000; i++);
     pp++;
     writeChar( num % 10 + '0', pp);
-	//unlock(&MTX);
+	unlock(&MTX);
 	//yield();
 }
 
