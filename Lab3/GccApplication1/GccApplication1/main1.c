@@ -6,8 +6,6 @@
 
 
 uint16_t sccMap[] = {0x1551, 0x2080, 0x1e11, 0x1b11, 0x0b50, 0x1b41, 0x1f41, 0x0111, 0x1f51, 0x1b51, 0x0000};
-bool prev = false;
-int pp;
 mutex MTX = MUTEX_INIT;
 
 void LCD_Init(void) {
@@ -19,6 +17,15 @@ void LCD_Init(void) {
 	
 	return;
 }
+
+
+typedef struct blinkData {
+	uint16_t nextVal;
+	uint16_t oldVal;
+	bool needsWrapped;
+	bool wrapped;
+}blinkData; 
+
 
 
 void writeChar(char ch, int pos) {
@@ -95,36 +102,70 @@ bool is_prime(long i) {
 }
 
 void printAt(long num, int pos) {
-
-	//Lock to not disturb shared variable pp
-	lock(&MTX);
-    pp = pos;
+    int pp = pos;
     writeChar( (num % 100) / 10 + '0', pp);
 	for(volatile int i = 0; i < 1000; i++);
     pp++;
     writeChar( num % 10 + '0', pp);
-	unlock(&MTX);
-	//yield();
+
 }
 
-void computePrimes(int pos) {
-    long n;
-
-    for(n = 1; ; n++) {
-        if (is_prime(n)) {
-            printAt(n, pos);
-        }
-    }
-}
-
-
-//Every 50 ms
 ISR(TIMER1_COMPA_vect) {
 	yield();
 }
 
-int main() {
-	LCD_Init();
-    spawn(computePrimes, 0);
-    computePrimes(3);
+
+void primes() {
+    long i = 0;
+	while(1) {
+		if (is_prime(i)) {
+			printAt(i, 0);
+		}
+		i += 1;
+	}
 }
+
+void blink() {
+	while(1) {
+		volatile long currVal = getInterrupts();
+		
+		if (currVal >= 10) {
+			LCDDR0 = (LCDDR0 & 0xfd) | ((~LCDDR0) & 0x2);
+			resetInterrupts();
+        }
+	}
+}
+
+
+void button() {
+    long numPressed = 0;
+    bool prev = false;
+    LCDDR0 = LCDDR0 | (1 << 2);
+	while(1) {
+		if (((PINB >> 7) & 0x1) == 0) {
+			if (!prev) {
+				// Shift the displays
+				LCDDR0 =  (LCDDR0 & 0xbb) | ((~LCDDR0) & 0x44);
+                numPressed += 1;
+                printAt(numPressed, 4);
+			}
+			prev = true;
+			} else {
+			prev = false;
+		}
+	}
+}
+	
+
+
+int main(void)
+{
+    CLKPR = 0x80;
+	CLKPR = 0x00;
+	PORTB = PORTB | (1 << PB7);
+    LCD_Init();
+    spawn(blink, 0);
+    spawn(button, 0);
+	primes();
+}
+

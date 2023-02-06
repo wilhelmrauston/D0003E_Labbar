@@ -18,7 +18,7 @@ typedef struct blinkData {
 	uint16_t oldVal;
 	bool needsWrapped;
 	bool wrapped;
-	}blinkData; 
+}blinkData; 
 
 
 void writeChar(char ch, int pos) {
