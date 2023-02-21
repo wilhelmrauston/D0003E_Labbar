@@ -824,9 +824,9 @@ static void initialize(void) {
  48e:	20 93 81 00 	sts	0x0081, r18	; 0x800081 <__TEXT_REGION_LENGTH__+0x7fc081>
 
     //8 000 000 / 1024 /1000 * 50 * 100 (Target Time)
-    OCR1A = 10;//390.625*10;
- 492:	2a e0       	ldi	r18, 0x0A	; 10
- 494:	30 e0       	ldi	r19, 0x00	; 0
+    OCR1A = 390.625*10;
+ 492:	22 e4       	ldi	r18, 0x42	; 66
+ 494:	3f e0       	ldi	r19, 0x0F	; 15
  496:	30 93 89 00 	sts	0x0089, r19	; 0x800089 <__TEXT_REGION_LENGTH__+0x7fc089>
  49a:	20 93 88 00 	sts	0x0088, r18	; 0x800088 <__TEXT_REGION_LENGTH__+0x7fc088>
     

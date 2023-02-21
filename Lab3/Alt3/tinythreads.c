@@ -37,6 +37,8 @@ static void initialize(void) {
     threads[NTHREADS-1].next = NULL;
 
     //Set compare match
+    TCCR1A = (1 << COM1A1) | (1 << COM1A0);
+
     PORTB = PORTB | (1 << PB5);
     PORTB = PORTB | (1 << PB7);
     

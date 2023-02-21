@@ -27,6 +27,8 @@ thread freeQ   = threads;
 thread readyQ  = NULL;
 thread current = &initp;
 
+mutex MTX2 = MUTEX_INIT;
+
 int initialized = 0;
 long interrupts = 0;
 
@@ -38,7 +40,6 @@ static void initialize(void) {
 
     //Set compare match
     PORTB = PORTB | (1 << PB5);
-    PORTB = PORTB | (1 << PB7);
     
     //Set timer enabler
     TIMSK1 = (1 << OCIE1A);
@@ -46,25 +47,31 @@ static void initialize(void) {
     //Set pre-scaling factor and CTC
 	TCCR1B = (1 << WGM12) | (1 << CS12) | (1 << CS10);
 
-    //8 000 000 / 1024 /1000 * 50 * 100 (Target Time)
-    OCR1A = 390.625*10;
+    //8 000 000 / 1024 /1000 * 50 (Target Time)
+    OCR1A = 390.625;
     
     //Set timer
 	TCNT1 = 0;
 
-    EIMSK = EIMSK | (1<<PCINT15);
-    PCMSK1 = PCMSK1 | (1<<PCINT15);
-
     initialized = 1;
 }
 
+long getInterrupts() {
+	return interrupts;
+}
+
+void resetInterrupts() {
+	interrupts = 0;
+}
 static void enqueue(thread p, thread *queue) {
+    p->next = NULL;
     if (*queue == NULL) {
         *queue = p;
     } else {
         thread q = *queue;
-        p->next = q;
-        *queue = p;
+        while (q->next)
+            q = q->next;
+        q->next = p;
     }
 }
 
@@ -100,7 +107,7 @@ void spawn(void (* function)(int), int arg) {
     if (setjmp(newp->context) == 1) {
         ENABLE();
         //unlock(&MTX2);
-        current->function(current->arg);
+        current->function(); //current->arg
         DISABLE();
         //lock(&MTX2);
 
@@ -109,10 +116,17 @@ void spawn(void (* function)(int), int arg) {
     }
     SETSTACK(&newp->context, &newp->stack);
 
-    enqueue(current, &readyQ);
-
-    dispatch(newp);
+    enqueue(newp, &readyQ);
+    //unlock(&MTX2);
     ENABLE();
+}
+
+void yield(void) {
+	DISABLE();
+	interrupts += 1;
+	enqueue(current, &readyQ);
+	dispatch(dequeue(&readyQ));
+	ENABLE();
 }
 
 void lock(mutex *m) {
@@ -144,10 +158,3 @@ void unlock(mutex *m) {
     }
     ENABLE();
 }
-
-/*
-void yield (){
-    enqueue(current, &readyQ);
-    dispatch(dequeue(readyQ));
-}
-*/

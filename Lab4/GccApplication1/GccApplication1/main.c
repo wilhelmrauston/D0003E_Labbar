@@ -6,13 +6,24 @@
  */ 
 
 #include <avr/io.h>
+#include "Gui.h"
+#include "InputHandler.h"
+#include "PulseGen.h"
+#include "PulseSender.h"
+
+//GUI gui = initGUI();
+//CONTROLLER controller = initCONTROLLER();
+PulseSender PS = initPulseSender();
+PulseGen ArrPulse[] = {initPulseGen(1, 4, 1), initPulseGen(0, 6, 1)};
+ArrPulse[0].PS = PS;
+ArrPulse[1].PS = PS;
 
 
-int main(void)
-{
-    /* Replace with your application code */
-    while (1) 
-    {
-    }
+int main(void){
+
+    //INSTALL(&controller, movevertical, IRQ_1);
+    //INSTALL(&controller, movehorizontal, IRQ_2);
+    ArrPulse[1];
+    //return TINYTIMBER(&controller, meth3, val);
 }
 
