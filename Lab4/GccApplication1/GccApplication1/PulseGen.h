@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include "PulseSender.h"
 #include "TinyTimber.h"
 
 typedef struct PulseGen{
@@ -10,7 +11,7 @@ typedef struct PulseGen{
     bool active;
     uint8_t pin;
     uint16_t freq;
-    PulseSender PS;
+    PulseSender* PS;
 
 } PulseGen;
 

@@ -12,7 +12,7 @@ typedef struct CONTROLLER{
 } CONTROLLER;
 
 void initialize (CONTROLLER *self) {
-    SYNC(self->gui, initLCD, NULL);
+    SYNC(&self->gui, InitLCD, NULL);
     //ASYNC PG 1 & 2 , NULL ?
 
 

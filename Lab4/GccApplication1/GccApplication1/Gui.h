@@ -13,9 +13,7 @@ typedef struct GUI {
 #define initGUI() \
 		{ initObject(), 0}
 
-void InitLCD();
-
-void printAt(GUI *self, int pos); 
+void InitLCD(GUI *self);
 
 void switchActive(GUI *self); 
 
