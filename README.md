@@ -7,3 +7,7 @@ Grade: Passed!
 Lab 2: The purpose of this lab assignment is to provide insights into the techniques by which multiple parallel threads can be implemented on a single sequential processor.
 
 Grade: Passed!
+
+Lab 3: Explore the benefits of threaded concurrency by revisiting the problem studied in lab 1. 
+
+Passed
