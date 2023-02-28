@@ -10,4 +10,6 @@ Grade: Passed!
 
 Lab 3: Explore the benefits of threaded concurrency by revisiting the problem studied in lab 1. 
 
-Passed
+Grade: Passed
+
+Lab 4:
