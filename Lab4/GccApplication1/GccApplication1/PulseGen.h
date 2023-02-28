@@ -6,17 +6,19 @@
 #include "PulseSender.h"
 #include "TinyTimber.h"
 
-typedef struct PulseGen{
+typedef struct {
     Object super;
-    bool active;
     uint8_t pin;
-    uint16_t freq;
-    PulseSender* PS;
-
+    uint8_t freq;
+    uint8_t prev;
+    PulseSender *PS;
+    GUI *gui;
 } PulseGen;
 
-#define initPulseGen(active, pin, freq) {initObject(), active, pin, freq}
+#define initPulseGen(pin) {initObject(), pin, 1, 0, NULL, NULL}
 
 void generatePulse(PulseGen *self);
+
+void smoothIncrement(PulseGen *self);
 
 #endif

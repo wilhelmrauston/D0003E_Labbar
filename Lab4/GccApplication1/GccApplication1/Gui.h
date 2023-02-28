@@ -3,18 +3,20 @@
 
 #include "TinyTimber.h"
 #include <stdbool.h>
+#include <stdint.h>
 
 
 typedef struct GUI {
   Object super;
-  bool active;
+  uint8_t pos;
 } GUI;
 
-#define initGUI() \
-		{ initObject(), 0}
+#define initGUI(pos) {initObject(), pos}
 
-void InitLCD(GUI *self);
+void initLCD(GUI *self);
 
-void switchActive(GUI *self); 
+void printAt(GUI *self, uint8_t num);
+
+void switchActive(GUI *self);
 
 #endif

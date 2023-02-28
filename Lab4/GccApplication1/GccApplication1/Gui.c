@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include "TinyTimber.h"
 #include "Gui.h"
+#include <stdint.h>
 
 uint16_t sccMap[] = {0x1551, 0x2080, 0x1e11, 0x1b11, 0x0b50, 0x1b41, 0x1f41, 0x0111, 0x1f51, 0x1b51, 0x0000};
 
@@ -87,18 +88,20 @@ void writeChar(char ch, int pos) {
 	
 }
 
-void printAt(long num, int pos) {
-    int pp = pos;
+void printAt(GUI *self, uint8_t num) {
+    int pp = self->pos;
     writeChar( (num % 100) / 10 + '0', pp);
-	for(volatile int i = 0; i < 1000; i++);
     pp++;
     writeChar( num % 10 + '0', pp);
-
 }
 
-void switchActive (GUI *self) {
-    self->active = !self->active;
-    //activate other lcd part
-	//LCCD1 --> något annat
+void switchActive(GUI *self) {
+	if (self->pos == 0) {
+		LCDDR0 ^= 0b10;
+	}
+	else if (self->pos == 4) {
+		LCDDR1 ^= 0x1 << 6;
+	}
+}
 
-}   //activate other lcd part
+

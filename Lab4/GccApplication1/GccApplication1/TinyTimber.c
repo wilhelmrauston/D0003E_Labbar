@@ -174,7 +174,7 @@ void enqueueByBaseline(Msg p, Msg *queue) {
 }
 
 Msg dequeue(Msg *queue) {
-    Msg m = *queue;
+    volatile Msg m = *queue;
     if (m)
         *queue = m->next;
     else
