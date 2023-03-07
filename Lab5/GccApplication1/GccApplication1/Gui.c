@@ -6,27 +6,6 @@
 
 uint16_t sccMap[] = {0x1551, 0x2080, 0x1e11, 0x1b11, 0x0b50, 0x1b41, 0x1f41, 0x0111, 0x1f51, 0x1b51, 0x0000};
 
-
-void initLCD(Gui *self) {
-	//Part 1
-	CLKPR = 0x80;
-	CLKPR = 0x00;
-
-	LCDCCR = (1 << LCDCC3) | (1 << LCDCC2) | (1 << LCDCC1) | (1 << LCDCC0);
-	LCDCRB = (1 << LCDMUX1) | (1 << LCDMUX0) | (1 << LCDPM0) | (1 << LCDPM1) | (1 << LCDPM2) | (1 << LCDCS);
-	LCDFRR = (1 << LCDCD2) | (1 << LCDCD1) | (1 << LCDCD0);
-	LCDCRA = (1 << LCDEN) | (1 << LCDAB);
-
-    PORTB |= (1<<PB7)|(1<<PB6)|(1<<PB4);
-    PORTE |= (1<<PE2)|(1<<PE3);
-	DDRB   = (1<<DDB5)|(1<<DDB3)|(1<<DDB2)|(1<<DDB1)|(1<<DDB0);
-	DDRE   = (1<<DDE6)|(1<<DDE4);
-   
-	PCMSK0 = (1<<PCINT3)|(1<<PCINT2);
-	PCMSK1 = (1<<PCINT15)|(1<<PCINT14)|(1<<PCINT12);
-	EIMSK = (1 << PCIE1)|(1 << PCIE0);
-}
-
 void writeChar(char ch, int pos) {
 	
 	// Chars 0-9 + a blank
@@ -95,11 +74,14 @@ void printAt(Gui *self, uint8_t num) {
     writeChar( num % 10 + '0', pp);
 }
 
-void switchActive(Gui *self) {
+void switchActive(Gui *self, uint8_t status) {
+
+	// Set active signifier in gui to status
+
 	if (self->pos == 0) {
-		LCDDR0 ^= 0b10;
+		LCDDR0 = (LCDDR0 & ~(0x1 << 1)) | (status << 1);
 	}
 	else if (self->pos == 4) {
-		LCDDR1 ^= 0x1 << 6;
+		LCDDR1 = (LCDDR1 & ~(0x1 << 6)) | (status << 6);
 	}
 }

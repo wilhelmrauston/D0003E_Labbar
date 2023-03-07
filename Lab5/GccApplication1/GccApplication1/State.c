@@ -9,26 +9,49 @@
 #include "State.h"
 
 
+// 1 north
+// -1 south
+
+
+void initialize(State *self) {
+	TrafficLight NL = initTrafficLight(false);
+	TrafficLight SL = initTrafficLight(false);
+	self->northLight = &NL;
+	self->southLight = &SL;
+    ASYNC(self->gui[0], printAt, 0);
+    ASYNC(self->gui[1], printAt, 0);
+    ASYNC(self->gui[2], printAt, 0);
+    ASYNC(self->gui[0], switchActive, 1);
+	ASYNC(self->gui[2], switchActive, 1);
+	
+}
+
+void reveivedInterrupts(State *self) {
+    return;
+}   
+
 void carArrived(State *self, int dir) {
     switch (dir) {
         case 1:
             self->northQueue += 1;
-            if (crossing = 0) {
+            if (self->crossing == 0) {
                 if (self->currTimeout) {
                     ABORT(self->currTimeout);
                     }
                 self->currTimeout = AFTER(SEC(15), self, timeout, NULL);
                 ASYNC(self->northLight, setLamp, true);
+                ASYNC(self->gui[2], switchActive, 1);
             }
             break;
         case -1:
             self->southQueue += 1;
-            if (crossing = 0) {
+            if (self->crossing == 0) {
                 if (self->currTimeout) {
                     ABORT(self->currTimeout);
                     }
                 self->currTimeout = AFTER(SEC(15), self, timeout, NULL);
-                ASYNC(self->southLight, setLamp, true);   
+                ASYNC(self->southLight, setLamp, true);  
+                ASYNC(self->gui[0], switchActive, 1);
             }
             break;
     }
@@ -44,15 +67,56 @@ void carArrived(State *self, int dir) {
 
 
 void timeout(State *self) {
-    self->currTImeout = NULL;
+    self->currTimeout = NULL;
     ASYNC(self->southLight, setLamp, false);  
-    ASYNC(self->northLight, setLamp, false);  
+    ASYNC(self->northLight, setLamp, false);
+    ASYNC(self->gui[0], switchActive, 0);
+    ASYNC(self->gui[2], switchActive, 0);  
 }
 
 void startCrossing(State *self, int dir) {
+    switch (dir) {
+        case 1:
+            self->northQueue -= 1;
+            break;
+        case 2:
+            self->southQueue -= 1;
+            break;
+        self->crossing += dir;    
+    }
     AFTER(SEC(5), self, hasCrossed, dir);
 }
 
-void hasCrossed(State *self, int dir);
+void hasCrossed(State *self, int dir) {
+
+    // Once car has crossed, if its the last one on the road and other queue is waiting, switch lights
+    // If no car is waiting, both lights will be red
+
+    self->crossing -= dir;
+    if (self->crossing == 0) {
+        switch (dir) {
+            case 1:
+                ASYNC(self->northLight, setLamp, false);
+                ASYNC(self->gui[2], switchActive, 0);
+                if (self->southQueue > 0) {
+                    ASYNC(self->southLight, setLamp, true);
+                    ASYNC(self->gui[0], switchActive, 1);
+                }
+                break;
+            case 2:
+                ASYNC(self->southLight, setLamp, false);
+                ASYNC(self->gui[0], switchActive, 0);
+                if (self->northQueue > 0) {
+                    ASYNC(self->northLight, setLamp, true);
+                    ASYNC(self->gui[2], switchActive, 1);
+                }
+            if (self->currTimeout) {
+                ABORT(self->currTimeout);
+                self->currTimeout = NULL;
+            }
+        }
+    }
+
+}
 
 

@@ -8,11 +8,10 @@
 
 typedef struct TrafficLight {
   Object super;
-  bool active;
- 
+  bool act;
 } TrafficLight;
 
-#define initTrafficLight(active) {initObject(), active}
+#define initTrafficLight(act) {initObject(), act}
 
 void setLamp(TrafficLight *self, bool newActive);
 

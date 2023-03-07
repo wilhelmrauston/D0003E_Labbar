@@ -11,12 +11,12 @@ typedef struct Gui {
   uint8_t pos;
 } Gui;
 
-#define initGUI(pos) {initObject(), pos}
+#define initGui(pos) {initObject(), pos}
 
 void initLCD(Gui *self);
 
 void printAt(Gui *self, uint8_t num);
 
-void switchActive(Gui *self);
+void switchActive(Gui *self, uint8_t status);
 
 #endif
