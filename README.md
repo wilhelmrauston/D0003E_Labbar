@@ -17,3 +17,5 @@ Lab 4: Exercise programming according to the reactive objects model of TinyTimbe
 Grade: Passed!
 
 Lab 5: This assignment is about implementing a program for controlling car access to a narrow bridge by means of traffic lights. The lab will consist of two parts that work together: The AVR butterfly will be the traffic light controller and the PC will be the car simulator. The PC and the AVR butterfly will communicate by means of a serial cable.
+
+Grade:
