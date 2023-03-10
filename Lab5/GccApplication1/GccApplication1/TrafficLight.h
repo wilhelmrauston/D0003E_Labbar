@@ -4,15 +4,19 @@
 #include "TinyTimber.h"
 #include <stdbool.h>
 #include <stdint.h>
+#include "Gui.h"
 
 
 typedef struct TrafficLight {
   Object super;
-  bool act;
+  Gui *lightGui;
+  int act;
 } TrafficLight;
 
-#define initTrafficLight(act) {initObject(), act}
+#define initTrafficLight(act) {initObject(), NULL, act}
 
-void setLamp(TrafficLight *self, bool newActive);
+void setLamp(TrafficLight *self, int newActive);
+
+int getLamp(TrafficLight *self);
 
 #endif

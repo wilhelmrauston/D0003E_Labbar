@@ -5,6 +5,11 @@
 #include "Gui.h"
 #include <stdint.h>
 
-void setLamp (TrafficLight *self, bool newActive) {
+void setLamp (TrafficLight *self, int newActive) {
+	SYNC(self->lightGui, switchActive, newActive);
     self->act = newActive;
+}
+
+int getLamp(TrafficLight *self) {
+	return self->act;
 }

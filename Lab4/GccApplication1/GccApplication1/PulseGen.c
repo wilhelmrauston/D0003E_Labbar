@@ -12,27 +12,45 @@
 #define PNB6 (PINB & (1<<PINB6))
 #define PNB7 (PINB & (1<<PINB7))
 
-void generatePulse(PulseGen *self) {
-    if (self->freq > 0) {
-        ASYNC(self->PS, sendPulse, self->pin);
-        AFTER(MSEC(1000/(self->freq*2)), self, generatePulse, NULL);
-    } else {
-        ASYNC(self->PS, resetPin, self->pin);
-    }
+void generatePulse(PulseGen *self) {	
+	uint8_t frq = self->freq;
+	if (frq > 0) {
+		ASYNC(self->PS, sendPulse, self->pin);
+		AFTER(USEC(1000000/(frq*2)), self, generatePulse, NULL);
+	} else {
+		ASYNC(self->PS, resetPin, self->pin);
+		AFTER(MSEC(500), self, generatePulse, NULL);
+	}
 }
 
 
 void smoothIncrement(PulseGen *self){
     if (!PNB6 && self->freq < 99){
         self->freq += 1;
-        ASYNC(self->gui, printAt, self->freq);
+        SYNC(self->gui, printAt, self->freq);
 		if (!PNB6) {
-			AFTER(MSEC(75), self, smoothIncrement, 0);
+			AFTER(MSEC(100), self, smoothIncrement, 0);
 		}
     }
     if (!PNB7 && self->freq > 0){
         self->freq -= 1;
-        ASYNC(self->gui, printAt, self->freq);
-        AFTER(MSEC(75), self, smoothIncrement, 0);
+        SYNC(self->gui, printAt, self->freq);
+        AFTER(MSEC(100), self, smoothIncrement, 0);
     }
+}
+
+uint8_t getFrequency(PulseGen *self){
+    return self->freq;
+}
+
+void setFrequency(PulseGen *self, int newfreq){
+    self->freq = newfreq;
+}
+
+uint8_t getPrev(PulseGen *self) {
+    return self->prev;
+}
+
+void setPrev(PulseGen *self, int newPrev) {
+    self->prev = newPrev;
 }

@@ -5,7 +5,6 @@
  * Author : Nils
  */ 
 
-#include <avr/io.h>
 #include "State.h"
 
 
@@ -14,46 +13,38 @@
 
 
 void initialize(State *self) {
-	TrafficLight NL = initTrafficLight(false);
-	TrafficLight SL = initTrafficLight(false);
-	self->northLight = &NL;
-	self->southLight = &SL;
-    ASYNC(self->gui[0], printAt, 0);
-    ASYNC(self->gui[1], printAt, 0);
-    ASYNC(self->gui[2], printAt, 0);
-    ASYNC(self->gui[0], switchActive, 1);
-	ASYNC(self->gui[2], switchActive, 1);
-	
+	SYNC(self->gui[0], printAt, 0);
+	SYNC(self->gui[1], printAt, 0);
+	SYNC(self->gui[2], printAt, 0);
 }
 
-void reveivedInterrupts(State *self) {
-    return;
-}   
-
 void carArrived(State *self, int dir) {
-    switch (dir) {
-        case 1:
-            self->northQueue += 1;
-            if (self->crossing == 0) {
-                if (self->currTimeout) {
-                    ABORT(self->currTimeout);
-                    }
-                self->currTimeout = AFTER(SEC(15), self, timeout, NULL);
-                ASYNC(self->northLight, setLamp, true);
-                ASYNC(self->gui[2], switchActive, 1);
+		volatile bool oppAct;
+        switch (dir) {
+			case 1:
+				self->northQueue += 1;
+				SYNC(self->gui[2], printAt, self->northQueue);
+				oppAct = SYNC(self->southLight, getLamp, NULL);
+				if ((self->crossing == 0) && (!oppAct)) {
+					if (self->currTimeout) {
+						ABORT(self->currTimeout);
+						}
+					self->currTimeout = AFTER(SEC(15), self, timeout, NULL);
+					ASYNC(self->northLight, setLamp, true);
+				}
+				break;
+			case -1:
+				self->southQueue += 1;
+				SYNC(self->gui[0], printAt, self->southQueue);
+				oppAct = SYNC(self->northLight, getLamp, NULL);
+				if (self->crossing == 0) {
+					if (self->currTimeout) {
+						ABORT(self->currTimeout);
+						}
+					self->currTimeout = AFTER(SEC(15), self, timeout, NULL);
+					ASYNC(self->southLight, setLamp, true);  
             }
-            break;
-        case -1:
-            self->southQueue += 1;
-            if (self->crossing == 0) {
-                if (self->currTimeout) {
-                    ABORT(self->currTimeout);
-                    }
-                self->currTimeout = AFTER(SEC(15), self, timeout, NULL);
-                ASYNC(self->southLight, setLamp, true);  
-                ASYNC(self->gui[0], switchActive, 1);
-            }
-            break;
+			break;
     }
 }
 
@@ -70,19 +61,24 @@ void timeout(State *self) {
     self->currTimeout = NULL;
     ASYNC(self->southLight, setLamp, false);  
     ASYNC(self->northLight, setLamp, false);
-    ASYNC(self->gui[0], switchActive, 0);
-    ASYNC(self->gui[2], switchActive, 0);  
+    SYNC(self->gui[0], switchActive, 0);
+    SYNC(self->gui[2], switchActive, 0);  
 }
 
 void startCrossing(State *self, int dir) {
+	self->crossing += dir;
+	SYNC(self->gui[1], printAt, abs(self->crossing)); 
     switch (dir) {
         case 1:
             self->northQueue -= 1;
+			SYNC(self->gui[2], printAt, self->northQueue);
             break;
-        case 2:
+        case -1:
             self->southQueue -= 1;
+			SYNC(self->gui[0], printAt, self->southQueue);
             break;
-        self->crossing += dir;    
+        self->crossing += dir;
+		SYNC(self->gui[1], printAt, abs(self->crossing));    
     }
     AFTER(SEC(5), self, hasCrossed, dir);
 }
@@ -93,22 +89,19 @@ void hasCrossed(State *self, int dir) {
     // If no car is waiting, both lights will be red
 
     self->crossing -= dir;
+	SYNC(self->gui[1], printAt, abs(self->crossing));   
     if (self->crossing == 0) {
         switch (dir) {
             case 1:
                 ASYNC(self->northLight, setLamp, false);
-                ASYNC(self->gui[2], switchActive, 0);
                 if (self->southQueue > 0) {
                     ASYNC(self->southLight, setLamp, true);
-                    ASYNC(self->gui[0], switchActive, 1);
                 }
                 break;
-            case 2:
+            case -1:
                 ASYNC(self->southLight, setLamp, false);
-                ASYNC(self->gui[0], switchActive, 0);
                 if (self->northQueue > 0) {
                     ASYNC(self->northLight, setLamp, true);
-                    ASYNC(self->gui[2], switchActive, 1);
                 }
             if (self->currTimeout) {
                 ABORT(self->currTimeout);

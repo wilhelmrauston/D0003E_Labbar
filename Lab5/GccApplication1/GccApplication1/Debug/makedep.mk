@@ -4,6 +4,8 @@
 
 Gui.c
 
+InputHandler.c
+
 main.c
 
 State.c

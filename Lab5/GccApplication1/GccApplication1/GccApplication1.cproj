@@ -144,6 +144,12 @@
     <Compile Include="Gui.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="InputHandler.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="InputHandler.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="main.c">
       <SubType>compile</SubType>
     </Compile>

@@ -11,14 +11,19 @@ typedef struct CONTROLLER {
   PulseGen *ArrPulse[2];
   GUI *gui[2];
   int active;
+  Msg holding;
+  int debounce;	
 } CONTROLLER;
 
-#define initCONTROLLER() {initObject(), NULL, NULL, 0}
+#define initCONTROLLER() {initObject(), NULL, NULL, 0, NULL, false, 0}
 
 void initialize(CONTROLLER *self);
 
 void movevertical(CONTROLLER *self);
 
 void movehorizontal(CONTROLLER *self);
+
+void resetDebounce(CONTROLLER *self);
+
 
 #endif

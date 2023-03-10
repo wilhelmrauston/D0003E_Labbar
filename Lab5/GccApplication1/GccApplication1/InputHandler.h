@@ -6,6 +6,7 @@
 
 #include "TinyTimber.h"
 #include "State.h"
+#include <avr/io.h>
 
 
 typedef struct InputHandler {
@@ -15,6 +16,6 @@ typedef struct InputHandler {
 
 #define initInputHandler() {initObject(), NULL }
 
-void inputObserver(InputHandler *self);
+void readObserver(InputHandler *self);
 
 #endif

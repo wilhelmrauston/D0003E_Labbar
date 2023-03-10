@@ -13,12 +13,23 @@ typedef struct {
     uint8_t prev;
     PulseSender *PS;
     GUI *gui;
+    bool runNext;
 } PulseGen;
 
-#define initPulseGen(pin) {initObject(), pin, 1, 0, NULL, NULL}
+#define initPulseGen(pin) {initObject(), pin, 1, 0, NULL, NULL, true}
 
 void generatePulse(PulseGen *self);
 
 void smoothIncrement(PulseGen *self);
+
+uint8_t getFrequency(PulseGen *self);
+
+void setFrequency(PulseGen *self, int newfreq);
+
+uint8_t getPrev(PulseGen *self);
+
+void setPrev(PulseGen *self, int newPrev);
+
+
 
 #endif

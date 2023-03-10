@@ -5,6 +5,9 @@
 #include "TinyTimber.h"
 #include "Gui.h"
 #include <stdbool.h>
+#include <avr/io.h>
+#include <avr/interrupt.h>
+#include <stdlib.h>
 
 typedef struct State {
 	Object super;
@@ -15,12 +18,12 @@ typedef struct State {
     int crossing;
     Msg currTimeout;
     Gui *gui[3];
+	int initiated;
 } State;
 
-#define initState() {initObject(), 0, 0, NULL, NULL, 0, NULL, NULL}
+#define initState() {initObject(), 0, 0, NULL, NULL, 0, NULL, NULL, 0}
 
 
-void receivedInterrupt(State *self);
 void carArrived(State *self, int dir);
 void timeout(State *self);
 void startCrossing(State *self, int dir);
