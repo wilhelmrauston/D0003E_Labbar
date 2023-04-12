@@ -1,0 +1,2 @@
+gcc -o run globals.c main.c SerialPort.c Gui.c InputHandler.c Simulator.c 
+./run
