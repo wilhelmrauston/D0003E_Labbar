@@ -11,6 +11,8 @@
 #include "State.h"
 #include "Utility.h"
 #include "InputHandler.h"
+#include "TrafficLight.h"
+#include "Writer.h"
 
 #define FOSC 8000000UL // Clock Speed
 #define BAUD 9600
@@ -21,19 +23,23 @@ Utility utility = initUtility();
 Gui gui[] = {initGui(0), initGui(2), initGui(4)};
 State state = initState();
 InputHandler inputHandler = initInputHandler(); 
-TrafficLight NL = initTrafficLight(0);
-TrafficLight SL = initTrafficLight(0);
+TrafficLight NL = initTrafficLight(0, 1);
+TrafficLight SL = initTrafficLight(0, -1);
+Writer writer = initWriter();
 
 
 int main(void)
 {
 	initUtil(&utility, MYUBRR);
 	inputHandler.state = &state;
+	inputHandler.wrt = &writer;
 	state.gui[0] = &gui[0];
 	state.gui[1] = &gui[1];
 	state.gui[2] = &gui[2];
-	SL.lightGui = &gui[0];
+	SL.lightGui = &gui[0]; 
 	NL.lightGui = &gui[2];
+    SL.wrt = &writer;
+    NL.wrt = &writer;
 	state.northLight = &NL;
 	state.southLight = &SL;
     INSTALL(&inputHandler, readObserver, IRQ_USART0_RX);

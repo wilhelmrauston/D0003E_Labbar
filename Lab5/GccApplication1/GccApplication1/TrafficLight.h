@@ -5,15 +5,19 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "Gui.h"
+#include <avr/io.h>
+#include "Writer.h"
 
 
 typedef struct TrafficLight {
   Object super;
   Gui *lightGui;
   int act;
+  int dir;
+  Writer *wrt;
 } TrafficLight;
 
-#define initTrafficLight(act) {initObject(), NULL, act}
+#define initTrafficLight(act, dir) {initObject(), NULL, act, dir, NULL}
 
 void setLamp(TrafficLight *self, int newActive);
 

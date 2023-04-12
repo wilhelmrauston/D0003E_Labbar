@@ -1,4 +1,3 @@
-#include <avr/io.h>
 #include "Utility.h"
 
 void initUtil (Utility *self, unsigned int ubrr){
@@ -13,7 +12,7 @@ void initUtil (Utility *self, unsigned int ubrr){
     PORTB |= (1<<PB7)|(1<<PB6)|(1<<PB4);
     PORTE |= (1<<PE2)|(1<<PE3);
 	DDRB   = (1<<DDB5)|(1<<DDB3)|(1<<DDB2)|(1<<DDB1)|(1<<DDB0);
-	DDRE   = (1<<DDE6)|(1<<DDE4);
+	DDRE   = (1<<DDE6)|(1<<DDE4); 
    
 	PCMSK0 = (1<<PCINT3)|(1<<PCINT2);
 	PCMSK1 = (1<<PCINT15)|(1<<PCINT14)|(1<<PCINT12);
@@ -27,6 +26,6 @@ void initUtil (Utility *self, unsigned int ubrr){
 	UCSR0B = (1<<RXEN0)|(1<<TXEN0)|(1<<RXCIE0);
 	
 	/* Set frame format: 8data, 1stop bit */
-	UCSR0C = (0<<USBS0)|(1<<UCSZ00)|(1<<UCSZ01);
+	UCSR0C = (1<<UCSZ00)|(1<<UCSZ01);
 }
 

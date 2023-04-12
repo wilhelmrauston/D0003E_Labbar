@@ -1,9 +1,10 @@
 #ifndef GUI_H_
 #define GUI_H_
 
-#include "TinyTimber.h"
-#include <stdbool.h>
 #include <stdint.h>
+#include <avr/io.h>
+#include <stdbool.h>
+#include "TinyTimber.h"
 
 
 typedef struct Gui {

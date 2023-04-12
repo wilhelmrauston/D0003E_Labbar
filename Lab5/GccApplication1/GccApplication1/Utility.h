@@ -1,7 +1,7 @@
 #ifndef UTILITY_H
 #define UTILITY_H
 
-
+#include <avr/io.h>
 #include "TinyTimber.h"
 
 typedef struct Utility{

@@ -1,8 +1,6 @@
-#include <avr/io.h>
-#include <stdbool.h>
-#include "TinyTimber.h"
+
 #include "Gui.h"
-#include <stdint.h>
+
 
 uint16_t sccMap[] = {0x1551, 0x2080, 0x1e11, 0x1b11, 0x0b50, 0x1b41, 0x1f41, 0x0111, 0x1f51, 0x1b51, 0x0000};
 

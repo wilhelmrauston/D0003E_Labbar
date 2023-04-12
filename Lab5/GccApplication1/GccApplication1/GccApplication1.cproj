@@ -177,6 +177,12 @@
     <Compile Include="Utility.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="Writer.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Writer.h">
+      <SubType>compile</SubType>
+    </Compile>
   </ItemGroup>
   <Import Project="$(AVRSTUDIO_EXE_PATH)\\Vs\\Compiler.targets" />
 </Project>

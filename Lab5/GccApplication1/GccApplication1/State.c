@@ -19,32 +19,25 @@ void initialize(State *self) {
 }
 
 void carArrived(State *self, int dir) {
-		volatile bool oppAct;
+		volatile int oppAct;
         switch (dir) {
 			case 1:
+
 				self->northQueue += 1;
 				SYNC(self->gui[2], printAt, self->northQueue);
 				oppAct = SYNC(self->southLight, getLamp, NULL);
-				if ((self->crossing == 0) && (!oppAct)) {
-					if (self->currTimeout) {
-						ABORT(self->currTimeout);
-						}
-					self->currTimeout = AFTER(SEC(15), self, timeout, NULL);
-					ASYNC(self->northLight, setLamp, true);
+				if ((self->crossing >= 0) && !(oppAct == 1) && (!self->currNext) && (self->crossing == 0 || self->currTimeout)) {
+					changeLights(self, 1, 1);
 				}
 				break;
 			case -1:
 				self->southQueue += 1;
 				SYNC(self->gui[0], printAt, self->southQueue);
 				oppAct = SYNC(self->northLight, getLamp, NULL);
-				if (self->crossing == 0) {
-					if (self->currTimeout) {
-						ABORT(self->currTimeout);
-						}
-					self->currTimeout = AFTER(SEC(15), self, timeout, NULL);
-					ASYNC(self->southLight, setLamp, true);  
-            }
-			break;
+				if ((self->crossing <= 0) && !(oppAct == 1) && (!self->currNext) && (self->crossing == 0 || self->currTimeout)) {
+					changeLights(self, 1, -1);  
+                }
+			    break;
     }
 }
 
@@ -57,30 +50,98 @@ void carArrived(State *self, int dir) {
     //It is, however, not required to deal with cars that stop on the bridge, make u-turns, ignore green lights, ignore red lights, ignore the one-car-per-green restriction, drive at extreme speeds (high and low), etc. These are not unrealistic assumptions – few real traffic light systems are designed to detect (say) cars that stop in the middle of a crossing due to engine failure.
 
 
-void timeout(State *self) {
-    self->currTimeout = NULL;
-    ASYNC(self->southLight, setLamp, false);  
-    ASYNC(self->northLight, setLamp, false);
-    SYNC(self->gui[0], switchActive, 0);
-    SYNC(self->gui[2], switchActive, 0);  
+void timeout(State *self, int dir) {
+	if (self->currNext) {
+		ABORT(self->currNext);
+        self->currNext = NULL;
+    }
+	self->currTimeout = NULL;
+    switch (dir) {
+        case 1: 
+            if (self->crossing != 0) {
+                if (self->southQueue == 0) {
+                    //reset timeout
+                    changeLights(self, 1, 1);   //set north to green
+                } else {
+                    changeLights(self, 0, 1);   //set north to red
+                }
+            } else {
+                if (self->southQueue > 0) {
+                    changeLights(self, 0, 1);   //set north to red
+                    changeLights(self, 1, -1);  //set south to green
+                } 
+                else if(self->northQueue == 0) {
+                    changeLights(self, 0, 1);   //set north to red
+                } 
+                else {
+                    //reset timeout
+                    changeLights(self, 1, 1);   //set north to green
+                }
+            }
+            break;
+        case -1:
+            if (self->crossing != 0) {
+                    if (self->northQueue == 0) {
+                        //reset timeout
+                        changeLights(self, 1, -1);   //set south to green
+                    } else {
+                        changeLights(self, 0, -1);   //set south to red
+                    }
+                } else {
+                    if (self->northQueue > 0) {
+                        changeLights(self, 0, -1);   //set south to red
+                        changeLights(self, 1, 1);  //set north to green
+                    } 
+                    else if(self->southQueue == 0) {
+                        changeLights(self, 0, -1);   //set south to red
+						
+                    } 
+                    else {
+                        //reset timeout
+                        changeLights(self, 1, -1);   //set south to green
+                    }
+            }
+            break;
+    }
 }
+
+void sendNext(State *self, int dir) {
+	switch (dir) {
+		case 1: 
+			if (self->northQueue > 0) {
+				SYNC(self->northLight, setLamp, 1);
+			}
+			break;
+		case -1:
+			if (self->southQueue > 0) {
+				SYNC(self->southLight, setLamp, 1);
+			}
+			break;
+	}
+
+	self->currNext = NULL;
+}
+
 
 void startCrossing(State *self, int dir) {
 	self->crossing += dir;
-	SYNC(self->gui[1], printAt, abs(self->crossing)); 
+	SYNC(self->gui[1], printAt, abs(self->crossing));
     switch (dir) {
         case 1:
             self->northQueue -= 1;
 			SYNC(self->gui[2], printAt, self->northQueue);
+			SYNC(self->northLight, setLamp, 0);
             break;
         case -1:
             self->southQueue -= 1;
 			SYNC(self->gui[0], printAt, self->southQueue);
+			SYNC(self->southLight, setLamp, 0);
             break;
         self->crossing += dir;
 		SYNC(self->gui[1], printAt, abs(self->crossing));    
     }
     AFTER(SEC(5), self, hasCrossed, dir);
+    self->currNext = AFTER(SEC(1), self, sendNext, dir);
 }
 
 void hasCrossed(State *self, int dir) {
@@ -93,23 +154,43 @@ void hasCrossed(State *self, int dir) {
     if (self->crossing == 0) {
         switch (dir) {
             case 1:
-                ASYNC(self->northLight, setLamp, false);
+                changeLights(self, 0, 1);
                 if (self->southQueue > 0) {
-                    ASYNC(self->southLight, setLamp, true);
+                    changeLights(self, 1, -1);
                 }
                 break;
             case -1:
-                ASYNC(self->southLight, setLamp, false);
+                changeLights(self, 0, -1);
                 if (self->northQueue > 0) {
-                    ASYNC(self->northLight, setLamp, true);
+                    changeLights(self, 1, 1);
                 }
-            if (self->currTimeout) {
-                ABORT(self->currTimeout);
-                self->currTimeout = NULL;
-            }
+                break;
         }
     }
 
 }
 
+void changeLights(State *self, int newActive, int dir) {
+	switch(dir) {
+		case 1:
+			SYNC(self->northLight, setLamp, newActive);
+			break;
+		case -1:
+			SYNC(self->southLight, setLamp, newActive);
+			break;
+	}
+	switch (newActive) {
+		case 1:
+			if (!(self->currTimeout)) {
+				self->currTimeout = AFTER(SEC(5), self, timeout, dir);
+			}
+			break;
+		case 0:
+			if (self->currTimeout) {
+				ABORT(self->currTimeout);
+				self->currTimeout = NULL;
+			}
+			break;		
+	}
+}
 

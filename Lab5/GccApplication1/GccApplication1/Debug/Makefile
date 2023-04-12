@@ -43,7 +43,8 @@ C_SRCS +=  \
 ../State.c \
 ../TinyTimber.c \
 ../TrafficLight.c \
-../Utility.c
+../Utility.c \
+../Writer.c
 
 
 PREPROCESSING_SRCS += 
@@ -59,7 +60,8 @@ main.o \
 State.o \
 TinyTimber.o \
 TrafficLight.o \
-Utility.o
+Utility.o \
+Writer.o
 
 OBJS_AS_ARGS +=  \
 Gui.o \
@@ -68,7 +70,8 @@ main.o \
 State.o \
 TinyTimber.o \
 TrafficLight.o \
-Utility.o
+Utility.o \
+Writer.o
 
 C_DEPS +=  \
 Gui.d \
@@ -77,7 +80,8 @@ main.d \
 State.d \
 TinyTimber.d \
 TrafficLight.d \
-Utility.d
+Utility.d \
+Writer.d
 
 C_DEPS_AS_ARGS +=  \
 Gui.d \
@@ -86,7 +90,8 @@ main.d \
 State.d \
 TinyTimber.d \
 TrafficLight.d \
-Utility.d
+Utility.d \
+Writer.d
 
 OUTPUT_FILE_PATH +=GccApplication1.elf
 
@@ -145,6 +150,13 @@ LINKER_SCRIPT_DEP+=
 	
 
 ./Utility.o: .././Utility.c
+	@echo Building file: $<
+	@echo Invoking: AVR/GNU C Compiler : 5.4.0
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\include"  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -Wextra -pedantic -mmcu=atmega169p -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\gcc\dev\atmega169p" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
+
+./Writer.o: .././Writer.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler : 5.4.0
 	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\include"  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -Wextra -pedantic -mmcu=atmega169p -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\gcc\dev\atmega169p" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
